@@ -72,7 +72,5 @@ Test Coverage Includes
 - Dispatch strategy behavior
 - Factory strategy selection
 
-  <img width="1468" height="761" alt="image" src="https://github.com/user-attachments/assets/0eecb1cd-b69a-4436-88aa-46a8c2ba83d9" />
-
 <img width="1468" height="761" alt="image" src="https://github.com/user-attachments/assets/0eecb1cd-b69a-4436-88aa-46a8c2ba83d9" />
 
