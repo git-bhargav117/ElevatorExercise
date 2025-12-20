@@ -19,26 +19,37 @@ namespace ElevatorSimulator.Services
         /// </summary>
         public ElevatorRequest GenerateRandomRequest()
         {
-            int waitingFloor = Random.Shared.Next(1, _maxFloor + 1);
-
-            ElevatorDirection direction;
-
-            if (waitingFloor == 1)
+            try
             {
-                direction = ElevatorDirection.Up;
-            }
-            else if (waitingFloor == _maxFloor)
-            {
-                direction = ElevatorDirection.Down;
-            }
-            else
-            {
-                direction = Random.Shared.Next(0, 2) == 0
-                    ? ElevatorDirection.Up
-                    : ElevatorDirection.Down;
-            }
+                int waitingFloor = Random.Shared.Next(1, _maxFloor + 1);
 
-            return new ElevatorRequest(waitingFloor, direction);
+                ElevatorDirection direction;
+
+                if (waitingFloor == 1)
+                {
+                    direction = ElevatorDirection.Up;
+                }
+                else if (waitingFloor == _maxFloor)
+                {
+                    direction = ElevatorDirection.Down;
+                }
+                else
+                {
+                    direction = Random.Shared.Next(0, 2) == 0
+                        ? ElevatorDirection.Up
+                        : ElevatorDirection.Down;
+                }
+
+                int destinationFloor = direction == ElevatorDirection.Up
+                                                    ? Random.Shared.Next(waitingFloor + 1, _maxFloor + 1)
+                                                    : Random.Shared.Next(1, waitingFloor);
+
+                return new ElevatorRequest(waitingFloor, direction, destinationFloor);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to generate a random elevator request.", ex);
+            }
         }
     }
 }

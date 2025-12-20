@@ -32,9 +32,9 @@ namespace ElevatorSimulator.Engine
         }
 
         /// <inheritdoc/>
-        public void ProcessManualRequest(int waitingFloor, ElevatorDirection direction)
+        public void ProcessManualRequest(int waitingFloor, ElevatorDirection direction, int destinationFloor)
         {
-            HandleRequest(new ElevatorRequest(waitingFloor, direction));
+            HandleRequest(new ElevatorRequest(waitingFloor, direction, destinationFloor));
         }
 
         /// <inheritdoc/>
@@ -55,17 +55,9 @@ namespace ElevatorSimulator.Engine
                 e.Tick();
 
                 stops = null;
+                stops = e.Stops;
 
-                if (e.Direction == ElevatorDirection.Down)
-                {
-                    stops = [.. e.Stops.OrderByDescending(f => f)];
-                }
-                else
-                {
-                    stops = e.Stops;
-                }
-
-                _logger.Log($"Car {e.Id} is on floor: {e.CurrentFloor}, Stops [{string.Join(",", stops)}]");
+                _logger.Log($"Elevator car {e.Id} is on floor: {e.CurrentFloor}, Stops [{string.Join(",", stops)}]");
             }
 
             Console.Write("\n");
@@ -74,9 +66,10 @@ namespace ElevatorSimulator.Engine
         private void HandleRequest(ElevatorRequest request)
         {
             var selected = _strategy.SelectElevator(_elevators, request);
-            _logger.Log($"'{request.Direction}' request on floor {request.WaitingFloor} received");
+            _logger.Log($"'{request.Direction}' request on floor {request.WaitingFloor} received for destination floor:{request.DestinationFloor}");
 
             selected.AddStop(request.WaitingFloor);
+            selected.AddStop(request.DestinationFloor);
         }
     }
 }

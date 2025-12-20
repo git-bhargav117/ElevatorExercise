@@ -30,14 +30,16 @@ namespace ElevatorSimulator.Tests
             // Arrange
             var elevator = new Elevator(1, initialFloor: 0, elevatorConfig: config);
 
-            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Up);
+            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Up, destinationFloor: 8);
 
             // Act
-            // Expected travel time = |0-5| * 10 = 50
+            // Expected time to pickup = |0-5| * 10 = 50
+            // Expected stop time at pickup = 10
+            // Expected time to destination = |5-8| * 10 = 30
             var eta = strategy.CalculateETA(elevator, request);
 
             // Assert
-            Assert.Equal(50, eta);
+            Assert.Equal(90, eta);
         }
 
         [Fact]
@@ -50,16 +52,18 @@ namespace ElevatorSimulator.Tests
             elevator.AddStop(3);
             elevator.AddStop(5);
 
-            var request = new ElevatorRequest(waitingFloor: 4, direction: ElevatorDirection.Up);
+            var request = new ElevatorRequest(waitingFloor: 4, direction: ElevatorDirection.Up, destinationFloor: 7);
 
             // Act
-            // travel = |1-4|*10 = 30
-            // stopsBeforePickup = Count stops <= 4 => {3} => 1 -> stop time 10
-            // expected = 30 + 10 = 40
+            // Expected time to pickup = |1-4|*10 = 30
+            // Expected stop time at pickup = 10
+            // StopsBeforePickup = Count stops <= 4 => {3} => 1 -> stop time 10
+            // StopedAfterPickup = Count stops > 4 => {5} => 1 -> stop time 10
+            // Expected time to destination = |4-7|*10 = 30
             var eta = strategy.CalculateETA(elevator, request);
 
             // Assert
-            Assert.Equal(40, eta);
+            Assert.Equal(90, eta);
         }
 
         [Fact]
@@ -69,11 +73,18 @@ namespace ElevatorSimulator.Tests
             var e1 = new Elevator(1, initialFloor: 0, elevatorConfig: config);
             var e2 = new Elevator(2, initialFloor: 5, elevatorConfig: config);
 
-            var request = new ElevatorRequest(waitingFloor: 6, direction: ElevatorDirection.Up);
+            var request = new ElevatorRequest(waitingFloor: 6, direction: ElevatorDirection.Up, destinationFloor: 9);
 
             // Act
-            // e1 ETA = |0-6|*10 = 60
-            // e2 ETA = |5-6|*10 = 10 -> e2 should be selected
+            // With updated ETA logic:
+            // e1 ETA = |0-6|*10 (travel to pickup) + 10 (stop at pickup) + |6-9|*10 (travel to destination) = 60 + 10 + 30 = 100
+            // e2 ETA = |5-6|*10 + 10 + |6-9|*10 = 10 + 10 + 30 = 50 -> e2 should be selected
+            var eta1 = strategy.CalculateETA(e1, request);
+            var eta2 = strategy.CalculateETA(e2, request);
+
+            Assert.Equal(100, eta1);
+            Assert.Equal(50, eta2);
+
             var selected = strategy.SelectElevator(new[] { e1, e2 }, request);
 
             // Assert
@@ -89,16 +100,18 @@ namespace ElevatorSimulator.Tests
             elevator.AddStop(6);
             elevator.AddStop(3);
 
-            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Down);
+            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Down, destinationFloor: 1);
 
-            // Act
-            // travel = |8-5| * 10 = 30
-            // stopsBeforePickup = Count stops >= 5 => {6} => 1 -> stop time 10
-            // expected = 30 + 10 = 40
+            // Act  
+            // Expected time to pickup = |8-5|*10 = 30
+            // Expected stop time at pickup = 10
+            // StopsBeforePickup = Count stops >= 5 => {6} => 1 -> stop time 10
+            // StopsAfterPickup = Count stops < 5 => {3} => 1 -> stop time 10
+            // Expected time to destination = |5-1|*10 = 40
             var eta = strategy.CalculateETA(elevator, request);
 
             // Assert
-            Assert.Equal(40, eta);
+            Assert.Equal(100, eta);
         }
 
         [Fact]
@@ -107,7 +120,7 @@ namespace ElevatorSimulator.Tests
             // Arrange
             var elevator = new Elevator(1, initialFloor: 4, elevatorConfig: config);
 
-            var request = new ElevatorRequest(waitingFloor: 4, direction: ElevatorDirection.Down);
+            var request = new ElevatorRequest(waitingFloor: 4, direction: ElevatorDirection.Down, destinationFloor: 0);
 
             // Act
             var eta = strategy.CalculateETA(elevator, request);
@@ -124,11 +137,9 @@ namespace ElevatorSimulator.Tests
             var e1 = new Elevator(1, initialFloor: 2, elevatorConfig: config);
             var e2 = new Elevator(2, initialFloor: 8, elevatorConfig: config);
 
-            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Down);
+            var request = new ElevatorRequest(waitingFloor: 5, direction: ElevatorDirection.Down, destinationFloor: 0);
 
             // Act
-            // e1 ETA = |2-5|*10 = 30
-            // e2 ETA = |8-5|*10 = 30 -> tie, OrderBy then First should pick e1
             var selected = strategy.SelectElevator(new[] { e1, e2 }, request);
 
             // Assert
@@ -142,14 +153,13 @@ namespace ElevatorSimulator.Tests
             var elevator = new Elevator(1, initialFloor: 2, elevatorConfig: config);
 
             // Create a request with invalid negative waiting floor
-            var request = new ElevatorRequest(waitingFloor: -1, direction: ElevatorDirection.Down);
+            var request = new ElevatorRequest(waitingFloor: -1, direction: ElevatorDirection.Down, destinationFloor: 0);
 
             // Act
-            // Abs distance = |2 - (-1)| * 10 = 30
             var eta = strategy.CalculateETA(elevator, request);
 
             // Assert
-            Assert.Equal(30, eta);
+            Assert.Equal(50, eta);
         }
 
         [Fact]
@@ -162,10 +172,9 @@ namespace ElevatorSimulator.Tests
             // Make busy elevator non-idle by adding stops and setting direction
             busy.AddStop(6);
 
-            var request = new ElevatorRequest(waitingFloor: 7, direction: ElevatorDirection.Up);
+            var request = new ElevatorRequest(waitingFloor: 7, direction: ElevatorDirection.Up, destinationFloor: 9);
 
             // Act
-            // Both could produce same numeric travel, but tie-breaker should pick first in list (idle)
             var selected = strategy.SelectElevator(new[] { idle, busy }, request);
 
             // Assert
@@ -180,13 +189,13 @@ namespace ElevatorSimulator.Tests
             elevator.AddStop(4);
             elevator.AddStop(6);
 
-            var request = new ElevatorRequest(waitingFloor: 0, direction: ElevatorDirection.Down);
+            var request = new ElevatorRequest(waitingFloor: 0, direction: ElevatorDirection.Up, destinationFloor: 2);
 
             // Act
             var eta = strategy.CalculateETA(elevator, request);
 
             // Assert
-            Assert.Equal(130, eta);
+            Assert.Equal(160, eta);
         }
     }
 }

@@ -38,7 +38,14 @@ namespace ElevatorSimulator
             {
                 while (!token.IsCancellationRequested)
                 {
-                    _engine.Tick();
+                    try
+                    {
+                        _engine.Tick();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Elevator movement failed: {ex.Message}");
+                    }
 
                     await Task.Delay(
                         TimeSpan.FromSeconds(_config.SimulationTiming.MoveDurationInSeconds),
@@ -51,11 +58,19 @@ namespace ElevatorSimulator
             // -----------------------------
             Task.Run(async () =>
             {
-                Thread.Sleep(5000); // Initial delay before starting random requests
+                // Initial delay before starting requests
+                await Task.Delay(5000, token);
 
                 while (!token.IsCancellationRequested)
                 {
-                    _engine.ProcessRandomRequest();
+                    try
+                    {
+                        _engine.ProcessRandomRequest();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ERROR] Random request failed: {ex.Message}");
+                    }
 
                     await Task.Delay(
                         TimeSpan.FromSeconds(_config.SimulationTiming.RandomRequestIntervalInSeconds),

@@ -13,7 +13,8 @@ namespace ElevatorSimulator.Engine
         /// </summary>
         /// <param name="waitingFloor">Pickup floor.</param>
         /// <param name="direction">Requested travel direction.</param>
-        void ProcessManualRequest(int waitingFloor, ElevatorDirection direction);
+        /// <param name="destinationFloor">Destination floor.</param>
+        void ProcessManualRequest(int waitingFloor, ElevatorDirection direction, int destinationFloor);
 
         /// <summary>
         /// Generates and processes a single random request to move from a waiting floor to a target floor in the given

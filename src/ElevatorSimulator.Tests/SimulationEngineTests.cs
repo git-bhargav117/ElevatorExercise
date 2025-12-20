@@ -41,7 +41,7 @@ namespace ElevatorSimulator.Tests
 
             var engine = new SimulationEngine(factoryMock.Object, loggerMock.Object, options);
 
-            engine.ProcessManualRequest(waitingFloor: 2, direction: ElevatorDirection.Up);
+            engine.ProcessManualRequest(waitingFloor: 2, direction: ElevatorDirection.Up, destinationFloor: 7);
 
             // After processing, one of the elevators should have both stops
             // We cannot access private elevator list, but we can call Tick() to exercise behavior

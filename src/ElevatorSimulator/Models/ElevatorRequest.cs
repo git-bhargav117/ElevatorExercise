@@ -16,10 +16,16 @@
         /// </summary>
         public ElevatorDirection Direction { get; }
 
-        public ElevatorRequest(int waitingFloor, ElevatorDirection direction)
+        /// <summary>
+        /// Elevator destination floor.
+        /// </summary>
+        public int DestinationFloor { get; }
+
+        public ElevatorRequest(int waitingFloor, ElevatorDirection direction, int destinationFloor)
         {
             Direction = direction;
             WaitingFloor = waitingFloor;
+            DestinationFloor = destinationFloor;
         }
     }
 }
