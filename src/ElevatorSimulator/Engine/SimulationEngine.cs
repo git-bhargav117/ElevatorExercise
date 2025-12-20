@@ -48,16 +48,11 @@ namespace ElevatorSimulator.Engine
         public void Tick()
         {
             Console.WriteLine("\n--------------Current Elevator Car Status-----------------");
-            var stops = new SortedSet<int>();
 
             foreach (var e in _elevators)
             {
                 e.Tick();
-
-                stops = null;
-                stops = e.Stops;
-
-                _logger.Log($"Elevator car {e.Id} is on floor: {e.CurrentFloor}, Stops [{string.Join(",", stops)}]");
+                _logger.Log($"Elevator car {e.Id} is on floor: {e.CurrentFloor}, Stops [{string.Join(",", e.Stops)}]");
             }
 
             Console.Write("\n");
